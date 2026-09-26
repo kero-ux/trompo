@@ -21,23 +21,5 @@
     <ClCompile Include="glad.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\OneDrive\Desktop\imgui-master\imgui.cpp">
-      <Filter>Archivos de origen</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\OneDrive\Desktop\imgui-master\imgui_draw.cpp">
-      <Filter>Archivos de origen</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\OneDrive\Desktop\imgui-master\imgui_tables.cpp">
-      <Filter>Archivos de origen</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\OneDrive\Desktop\imgui-master\imgui_widgets.cpp">
-      <Filter>Archivos de origen</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\OneDrive\Desktop\imgui-master\backends\imgui_impl_glfw.cpp">
-      <Filter>Archivos de origen</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\OneDrive\Desktop\imgui-master\backends\imgui_impl_opengl3.cpp">
-      <Filter>Archivos de origen</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

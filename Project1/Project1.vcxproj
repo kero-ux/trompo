@@ -19,12 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\OneDrive\Desktop\imgui-master\backends\imgui_impl_glfw.cpp" />
-    <ClCompile Include="..\..\..\..\OneDrive\Desktop\imgui-master\backends\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="..\..\..\..\OneDrive\Desktop\imgui-master\imgui.cpp" />
-    <ClCompile Include="..\..\..\..\OneDrive\Desktop\imgui-master\imgui_draw.cpp" />
-    <ClCompile Include="..\..\..\..\OneDrive\Desktop\imgui-master\imgui_tables.cpp" />
-    <ClCompile Include="..\..\..\..\OneDrive\Desktop\imgui-master\imgui_widgets.cpp" />
     <ClCompile Include="glad.cpp" />
     <ClCompile Include="main.cpp">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsCpp</CompileAs>
