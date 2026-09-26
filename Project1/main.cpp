@@ -1,7 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -9,11 +8,9 @@
 // Vertex Shader
 const char* vertexShaderSource = R"(#version 330 core
 layout (location = 0) in vec3 aPos;
-
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-
 void main()
 {
     gl_Position = projection * view * model * vec4(aPos, 1.0);
@@ -24,7 +21,6 @@ void main()
 const char* fragmentShaderSource = R"(#version 330 core
 out vec4 FragColor;
 uniform vec3 objectColor;
-
 void main()
 {
     FragColor = vec4(objectColor, 1.0);
@@ -51,19 +47,66 @@ int main()
 
     glEnable(GL_DEPTH_TEST);
 
-    // 1. Geometría del triángulo base
-    float triVertices[] = {
-         0.0f,  0.5f, 0.0f,
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f
+   
+
+    // Triángulo A: Rojo 
+    float triRojo_Vertices[] = {
+        0.00f,  0.00f,  3.00f,  // h
+        0.00f,  4.00f,  0.00f,  // a
+        4.00f,  0.00f,  0.00f   // b
     };
 
-    unsigned int triVBO, triVAO;
-    glGenVertexArrays(1, &triVAO);
-    glGenBuffers(1, &triVBO);
-    glBindVertexArray(triVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, triVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triVertices), triVertices, GL_STATIC_DRAW);
+    // Triángulo B: Verde 
+    float triVerde_Vertices[] = {
+        0.00f,  0.00f,  3.00f,  // h
+        0.00f,  4.00f,  0.00f,  // a
+        -4.00f,  0.00f, 0.00f,  // d
+    };
+
+    // Triángulo C: Azul 
+    float triAzul_Vertices[] = {
+        0.00f,  0.00f,  3.00f,   // h
+        4.00f,  0.00f,  0.00f,   // b
+        0.00f,  -4.00f, 0.00f,   // c
+    };
+
+    // Triángulo D: Amarillo 
+    float triAmarillo_Vertices[] = {
+        0.00f,  0.00f,  3.00f,   // h
+       -4.00f,  0.00f,  0.00f,   // d
+        0.00f,  -4.00f, 0.00f,   // c
+    };
+
+    // VAOs y VBOs independientes para cada triángulo
+    unsigned int triVAO[4], triVBO[4];
+    glGenVertexArrays(4, triVAO);
+    glGenBuffers(4, triVBO);
+
+    // Configurar Triángulo Rojo
+    glBindVertexArray(triVAO[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, triVBO[0]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(triRojo_Vertices), triRojo_Vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Configurar Triángulo Verde
+    glBindVertexArray(triVAO[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, triVBO[1]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(triVerde_Vertices), triVerde_Vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Configurar Triángulo Azul
+    glBindVertexArray(triVAO[2]);
+    glBindBuffer(GL_ARRAY_BUFFER, triVBO[2]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(triAzul_Vertices), triAzul_Vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Configurar Triángulo Amarillo
+    glBindVertexArray(triVAO[3]);
+    glBindBuffer(GL_ARRAY_BUFFER, triVBO[3]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(triAmarillo_Vertices), triAmarillo_Vertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
@@ -113,13 +156,11 @@ int main()
     unsigned int projLoc = glGetUniformLocation(shaderProgram, "projection");
     unsigned int colorLoc = glGetUniformLocation(shaderProgram, "objectColor");
 
-    // Datos de los tres triángulos sobre el eje Y
-    float distY[3] = { 0.4f, 0.8f, 1.2f };
-    float scales[3] = { 1.5f, 1.0f, 0.5f };
-    glm::vec3 colors[3] = {
-        glm::vec3(1.0f, 0.2f, 0.2f), // Mayor (cerca al origen)
-        glm::vec3(0.2f, 0.9f, 0.3f), // Medio
-        glm::vec3(0.2f, 0.4f, 1.0f)  // Menor (en la punta)
+    glm::vec3 colors[4] = {
+        glm::vec3(1.0f, 0.2f, 0.2f), // Mayor (rojo)
+        glm::vec3(0.2f, 0.9f, 0.3f), // Medio (verde)
+        glm::vec3(0.2f, 0.4f, 1.0f),  // Menor (azul)
+        glm::vec3(1.0f, 1.0f, 0.0f)  // Menor (azul)
     };
 
     while (!glfwWindowShouldClose(window))
@@ -131,9 +172,9 @@ int main()
 
         // Cámara fija en X mirando al centro, pero con el eje Z apuntando hacia arriba
         glm::mat4 view = glm::lookAt(
-            glm::vec3(5.0f, 0.0f, 0.0f), // Posición en X
+            glm::vec3(8.0f, 0.0f, 5.0f), // Posición en X
             glm::vec3(0.0f, 0.0f, 0.0f), // Mirando al origen
-            glm::vec3(0.0f, 0.0f, 1.0f)  // Vector UP: Z es ahora la vertical de la pantalla
+            glm::vec3(0.0f, 0.0f, 0.50f)  // Vector UP: Z es ahora la vertical de la pantalla
         );
 
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
@@ -141,7 +182,7 @@ int main()
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-        // Rotación general alrededor del eje Z ... velocidad
+        // Rotación general idéntica alrededor del eje Z (la L gira como trompo)
         float angleZ = (float)glfwGetTime() * glm::radians(80.0f);
         glm::mat4 systemRotation = glm::rotate(glm::mat4(1.0f), angleZ, glm::vec3(0.0f, 0.0f, 1.0f));
 
@@ -151,33 +192,21 @@ int main()
         glUniform3f(colorLoc, 0.6f, 0.6f, 0.6f); // Líneas en gris
         glDrawArrays(GL_LINES, 0, 6);
 
-        // 2. Dibujar los 3 triángulos sobre el brazo Y
-        glBindVertexArray(triVAO);
-        for (int i = 0; i < 3; i++)
+        // 2. Dibujar los 3 triángulos independientes (comparten la misma matriz rígida del sistema)
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(systemRotation));
+        for (int i = 0; i < 4; i++)
         {
-            glm::mat4 model = systemRotation;
-
-            // Posicionar a lo largo del palo menor (Y)
-            model = glm::translate(model, glm::vec3(0.0f, distY[i], 0.0f));
-
-            // Alinear paralelos al eje Z (palo largo)
-            model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-            // Escalar según su jerarquía de altura
-            model = glm::scale(model, glm::vec3(scales[i], scales[i], scales[i]));
-
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+            glBindVertexArray(triVAO[i]);
             glUniform3fv(colorLoc, 1, glm::value_ptr(colors[i]));
-
-            glDrawArrays(GL_TRIANGLES, 0, 3);
+            glDrawArrays(GL_TRIANGLES, 0, 4);
         }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    glDeleteVertexArrays(1, &triVAO);
-    glDeleteBuffers(1, &triVBO);
+    glDeleteVertexArrays(3, triVAO);
+    glDeleteBuffers(3, triVBO);
     glDeleteVertexArrays(1, &axisVAO);
     glDeleteBuffers(1, &axisVBO);
     glDeleteProgram(shaderProgram);
