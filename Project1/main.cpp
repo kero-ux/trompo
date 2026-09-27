@@ -45,6 +45,44 @@ void main()
 }
 )";
 
+glm::vec3 cameraPos = glm::vec3(12.0f, 12.0f, 8.0f); // Posición inicial
+glm::vec3 cameraFront = glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f) - glm::vec3(12.0f, 12.0f, 8.0f)); // Mirando al centro
+glm::vec3 cameraUp = glm::vec3(0.0f, 0.0f, 1.0f);   // Tu eje Z es arriba
+
+// Control de tiempo para movimiento fluido e independiente de los FPS
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+
+void processInput(GLFWwindow* window)
+{
+
+    float cameraSpeed = 10.0f * deltaTime; // Ajusta la velocidad de movimiento aquí
+
+    // W
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraFront;
+
+    // S
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraFront;
+
+    // A
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+
+    // D
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+
+    // Espacio
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        cameraPos += cameraUp * cameraSpeed;
+
+    // Left Shift
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        cameraPos -= cameraUp * cameraSpeed;
+}
+
 int main()
 {
     if (!glfwInit()) return -1;
@@ -297,15 +335,23 @@ int main()
 
     while (!glfwWindowShouldClose(window))
     {
+        // Calcular tiempo por frame (deltaTime)
+        float currentFrame = (float)glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
+        // Procesar teclas presionadas
+        processInput(window);
+
         glClearColor(0.15f, 0.05f, 0.25f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(prog);
 
         glm::mat4 view = glm::lookAt(
-            glm::vec3(12.0f, 12.0f, 8.0f),
-            glm::vec3(0.0f, 0.0f, 1.0f),
-            glm::vec3(0.0f, 0.0f, 1.0f)
+            cameraPos,                  // Dónde está la cámara (se mueve con WASD)
+            cameraPos + cameraFront,    // El punto al que apunta la vista
+            cameraUp                    // Vector arriba
         );
 
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
