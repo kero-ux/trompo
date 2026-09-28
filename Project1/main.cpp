@@ -45,42 +45,95 @@ void main()
 }
 )";
 
+// ==========================================
+// VARIABLES DE CÁMARA Y TIEMPO
+// ==========================================
 glm::vec3 cameraPos = glm::vec3(12.0f, 12.0f, 8.0f); // Posición inicial
-glm::vec3 cameraFront = glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f) - glm::vec3(12.0f, 12.0f, 8.0f)); // Mirando al centro
+glm::vec3 cameraFront = glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f) - glm::vec3(12.0f, 12.0f, 8.0f));
 glm::vec3 cameraUp = glm::vec3(0.0f, 0.0f, 1.0f);   // Tu eje Z es arriba
 
-// Control de tiempo para movimiento fluido e independiente de los FPS
+// Control de tiempo para movimiento fluido
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+// Variables de orientación con el mouse
+bool firstMouse = true;
+float lastX = 400.0f; // Centro de la pantalla
+float lastY = 300.0f;
+float yaw = -135.0f; // Orientación horizontal hacia el origen
+float pitch = -25.0f;  // Inclinación hacia abajo
+
+// Función para procesar movimiento de teclado
 void processInput(GLFWwindow* window)
 {
+    // Salir con Escape
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
 
-    float cameraSpeed = 10.0f * deltaTime; // Ajusta la velocidad de movimiento aquí
+    float cameraSpeed = 10.0f * deltaTime;
 
-    // W
+    // W: Avanzar
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cameraPos += cameraSpeed * cameraFront;
 
-    // S
+    // S: Retroceder
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         cameraPos -= cameraSpeed * cameraFront;
 
-    // A
+    // A: Izquierda
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 
-    // D
+    // D: Derecha
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 
-    // Espacio
+    // Espacio: Subir en Z
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
         cameraPos += cameraUp * cameraSpeed;
 
-    // Left Shift
+    // Left Shift: Bajar en Z
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
         cameraPos -= cameraUp * cameraSpeed;
+}
+
+// Función callback para mover la vista con el mouse
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+{
+    float xpos = static_cast<float>(xposIn);
+    float ypos = static_cast<float>(yposIn);
+
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // Invertido porque en pantalla Y crece hacia abajo
+    lastX = xpos;
+    lastY = ypos;
+
+    float sensitivity = 0.1f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw += xoffset;
+    pitch += yoffset;
+
+    // Limitar el cabeceo vertical
+    if (pitch > 89.0f)
+        pitch = 89.0f;
+    if (pitch < -89.0f)
+        pitch = -89.0f;
+
+    // Cálculo trigonométrico de dirección donde Z es vertical
+    glm::vec3 front;
+    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.z = sin(glm::radians(pitch));
+    cameraFront = glm::normalize(front);
 }
 
 int main()
@@ -91,7 +144,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Piramide 3D - Textura en Cara Azul", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "Piramide 3D - Camara FPS", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -99,94 +152,66 @@ int main()
     }
     glfwMakeContextCurrent(window);
 
+    // Bloquear cursor en la ventana y enlazar el callback del ratón
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, mouse_callback);
+
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) return -1;
 
     glViewport(0, 0, 800, 600);
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 
-
-    // Triángulo A: Rojo 
+    // Triángulo A: Rojo (Obama)
     float triRojo_Vertices[] = {
         0.00f,  0.00f,  3.00f,  0.50f, 1.0f, // h
         0.00f,  4.00f,  0.00f,  1.0f,  0.0f, // a
-        4.00f,  0.00f,  0.00f,  0.0f, 0.0f   // b
+        4.00f,  0.00f,  0.00f,  0.0f,  0.0f  // b
     };
 
-    // Triángulo B: Verde 
+    // Triángulo B: Verde (Diomedes)
     float triVerde_Vertices[] = {
-        0.00f,  0.00f,  3.00f,   0.50f, 1.0f, // h
-        0.00f,  4.00f,  0.00f,   1.0f,  0.0f, // a
-       -4.00f,  0.00f,  0.00f,   0.0f, 0.0f   // d
+        0.00f,  0.00f,  3.00f,  0.50f, 1.0f, // h
+        0.00f,  4.00f,  0.00f,  1.0f,  0.0f, // a
+       -4.00f,  0.00f,  0.00f,  0.0f,  0.0f  // d
     };
 
-    // Triángulo C: Azul (con coordenadas UV para millos.png)
+    // Triángulo C: Azul (Millonarios)
     float triAzul_Vertices[] = {
-        0.00f,  0.00f,  3.00f,   0.50f, 1.0f, // h
-        4.00f,  0.00f,  0.00f,   1.0f, 0.0f,  // b
-        0.00f, -4.00f,  0.00f,   0.0f, 0.0f   // c
+        0.00f,  0.00f,  3.00f,  0.50f, 1.0f, // h
+        4.00f,  0.00f,  0.00f,  1.0f,  0.0f, // b
+        0.00f, -4.00f,  0.00f,  0.0f,  0.0f  // c
     };
 
-    // Triángulo D: Amarillo 
+    // Triángulo D: Amarillo (Petrozki)
     float triAmarillo_Vertices[] = {
-        0.00f,  0.00f,  3.00f,   0.50f, 1.0f, // h
-       -4.00f,  0.00f,  0.00f,   1.0f, 0.0f,  // d
-        0.00f, -4.00f,  0.00f,   0.0f, 0.0f   // c
+        0.00f,  0.00f,  3.00f,  0.50f, 1.0f, // h
+       -4.00f,  0.00f,  0.00f,  1.0f,  0.0f, // d
+        0.00f, -4.00f,  0.00f,  0.0f,  0.0f  // c
     };
 
-    // VAOs y VBOs independientes para cada triángulo
     unsigned int triVAO[4], triVBO[4];
     glGenVertexArrays(4, triVAO);
     glGenBuffers(4, triVBO);
 
-    // Configurar Triángulo Rojo (stride de 3)
-    glBindVertexArray(triVAO[0]);
-    glBindBuffer(GL_ARRAY_BUFFER, triVBO[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triRojo_Vertices), triRojo_Vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    // Configurar VAO/VBOs (todos con stride de 5: 3 pos + 2 UV)
+    float* verticesArray[4] = { triRojo_Vertices, triVerde_Vertices, triAzul_Vertices, triAmarillo_Vertices };
+    for (int i = 0; i < 4; i++)
+    {
+        glBindVertexArray(triVAO[i]);
+        glBindBuffer(GL_ARRAY_BUFFER, triVBO[i]);
+        glBufferData(GL_ARRAY_BUFFER, 15 * sizeof(float), verticesArray[i], GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+    }
 
-    // Configurar Triángulo Verde (stride de 3)
-    glBindVertexArray(triVAO[1]);
-    glBindBuffer(GL_ARRAY_BUFFER, triVBO[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triVerde_Vertices), triVerde_Vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    // Configurar Triángulo Azul (stride de 5 por las coordenadas de textura)
-    glBindVertexArray(triVAO[2]);
-    glBindBuffer(GL_ARRAY_BUFFER, triVBO[2]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triAzul_Vertices), triAzul_Vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    // Configurar Triángulo Amarillo (stride de 3)
-    glBindVertexArray(triVAO[3]);
-    glBindBuffer(GL_ARRAY_BUFFER, triVBO[3]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triAmarillo_Vertices), triAmarillo_Vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    // 2. Geometría de los ejes rígidos:
+    // Geometría de los ejes
     float axisVertices[] = {
-        // [Vértices 0 a 1]: Eje Z positivo
         0.0f, 0.0f,  0.0f,   0.0f, 0.0f, 4.0f,
-
-        // [Vértices 2 a 3]: Eje Z negativo
         0.0f, 0.0f, -2.0f,   0.0f, 0.0f, 0.0f,
-
-        // [Vértices 4 a 5]: Eje Y
         0.0f, 0.0f,  0.0f,   0.0f, 3.5f, 0.0f,
-
-        // [Vértices 6 a 7]: Eje X
         0.0f, 0.0f,  0.0f,   2.5f, 0.0f, 0.0f
     };
 
@@ -199,7 +224,7 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // Compilación de shaders
+    // Shaders
     unsigned int vs = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vs, 1, &vertexShaderSource, NULL);
     glCompileShader(vs);
@@ -221,99 +246,68 @@ int main()
 
     int width, height, nrChannels;
 
-
+    // Textura 1 (Millonarios)
     unsigned int texture1;
     glGenTextures(1, &texture1);
     glBindTexture(GL_TEXTURE_2D, texture1);
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    
     unsigned char* data1 = stbi_load("millos.png", &width, &height, &nrChannels, 4);
     if (data1)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
         glGenerateMipmap(GL_TEXTURE_2D);
-        std::cout << "millos.png cargado correctamente." << std::endl;
         stbi_image_free(data1);
     }
-    else
-    {
-        std::cout << "Error al cargar millos.png" << std::endl;
-    }
 
-
+    // Textura 2 (Diomedes)
     unsigned int texture2;
     glGenTextures(1, &texture2);
     glBindTexture(GL_TEXTURE_2D, texture2);
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    
-    unsigned char* data2 = stbi_load("Diomedes Dias.jpg", &width, &height, &nrChannels, 0);
+    unsigned char* data2 = stbi_load("Diomedes Dias.jpg", &width, &height, &nrChannels, 4);
     if (data2)
     {
-        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data2);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2);
         glGenerateMipmap(GL_TEXTURE_2D);
-        std::cout << "el cacique fue cargado correctamente." << std::endl;
         stbi_image_free(data2);
     }
-    else
-    {
-        std::cout << "Error al cargar diomedes.jpg" << std::endl;
-    }
 
+    // Textura 3 (Obama)
     unsigned int texture3;
     glGenTextures(1, &texture3);
     glBindTexture(GL_TEXTURE_2D, texture3);
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-
     unsigned char* data3 = stbi_load("obama.jpg", &width, &height, &nrChannels, 4);
     if (data3)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data3);
         glGenerateMipmap(GL_TEXTURE_2D);
-        std::cout << "obama.jpg cargado correctamente." << std::endl;
         stbi_image_free(data3);
     }
-    else
-    {
-        std::cout << "Error al cargar obama.jpg" << std::endl;
-    }
 
+    // Textura 4 (Petrozki)
     unsigned int texture4;
     glGenTextures(1, &texture4);
     glBindTexture(GL_TEXTURE_2D, texture4);
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-
     unsigned char* data4 = stbi_load("petrozki.jpg", &width, &height, &nrChannels, 4);
     if (data4)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data4);
         glGenerateMipmap(GL_TEXTURE_2D);
-        std::cout << "petrozki.jpg cargado correctamente." << std::endl;
         stbi_image_free(data4);
-    }
-    else
-    {
-        std::cout << "Error al cargar petrozki.jpg" << std::endl;
     }
 
     // Uniforms
@@ -326,21 +320,12 @@ int main()
     unsigned int colorLoc = glGetUniformLocation(prog, "objectColor");
     unsigned int useTexLoc = glGetUniformLocation(prog, "useTexture");
 
-    glm::vec3 colors[4] = {
-        glm::vec3(1.0f, 0.2f, 0.2f), // Rojo
-        glm::vec3(0.2f, 0.9f, 0.3f), // Verde
-        glm::vec3(0.2f, 0.4f, 1.0f), // Azul
-        glm::vec3(1.0f, 1.0f, 0.0f)  // Amarillo
-    };
-
     while (!glfwWindowShouldClose(window))
     {
-        // Calcular tiempo por frame (deltaTime)
         float currentFrame = (float)glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // Procesar teclas presionadas
         processInput(window);
 
         glClearColor(0.15f, 0.05f, 0.25f, 1.0f);
@@ -348,10 +333,11 @@ int main()
 
         glUseProgram(prog);
 
+        // Matriz de vista dinámica controlada por teclado y ratón
         glm::mat4 view = glm::lookAt(
-            cameraPos,                  // Dónde está la cámara (se mueve con WASD)
-            cameraPos + cameraFront,    // El punto al que apunta la vista
-            cameraUp                    // Vector arriba
+            cameraPos,
+            cameraPos + cameraFront,
+            cameraUp
         );
 
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
@@ -369,35 +355,15 @@ int main()
         glUniform3f(colorLoc, 0.6f, 0.6f, 0.6f);
         glDrawArrays(GL_LINES, 0, 6);
 
-        // 2. Dibujar las 4 caras independientes
+        // 2. Dibujar las 4 caras texturizadas
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(systemRotation));
+        glUniform1i(useTexLoc, true);
+        glActiveTexture(GL_TEXTURE0);
+
+        unsigned int textures[4] = { texture3, texture2, texture1, texture4 };
         for (int i = 0; i < 4; i++)
         {
-            if (i == 2) // millos
-            {
-                glUniform1i(useTexLoc, true);
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, texture1);
-            }
-            else if (i == 1) // diomedes
-            {
-                glUniform1i(useTexLoc, true);
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, texture2);
-            }
-            else if (i == 0) // obama
-            {
-                glUniform1i(useTexLoc, true);
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, texture3);
-            }
-            else
-            {
-                glUniform1i(useTexLoc, true);
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, texture4);
-            }
-
+            glBindTexture(GL_TEXTURE_2D, textures[i]);
             glBindVertexArray(triVAO[i]);
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
