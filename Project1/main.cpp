@@ -280,6 +280,7 @@ int main()
         0.00f, -4.00f,  0.00f,   0.0f,  0.0f
     };
 
+    // VAOs y VBOs 
     unsigned int triVAO[4], triVBO[4];
     glGenVertexArrays(4, triVAO);
     glGenBuffers(4, triVBO);
@@ -366,7 +367,12 @@ int main()
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
         glGenerateMipmap(GL_TEXTURE_2D);
+        std::cout << "millos.png cargado correctamente." << std::endl;
         stbi_image_free(data1);
+    }
+    else
+    {
+        std::cout << "Error al cargar millos.png" << std::endl;
     }
 
     unsigned int texture2;
@@ -383,7 +389,12 @@ int main()
         GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data2);
         glGenerateMipmap(GL_TEXTURE_2D);
+        std::cout << "el cacique fue cargado correctamente." << std::endl;
         stbi_image_free(data2);
+    }
+    else
+    {
+        std::cout << "Error al cargar diomedes.jpg" << std::endl;
     }
 
     unsigned int texture3;
@@ -399,7 +410,12 @@ int main()
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data3);
         glGenerateMipmap(GL_TEXTURE_2D);
+        std::cout << "obama.jpg cargado correctamente." << std::endl;
         stbi_image_free(data3);
+    }
+    else
+    {
+        std::cout << "Error al cargar obama.jpg" << std::endl;
     }
 
     unsigned int texture4;
@@ -415,6 +431,7 @@ int main()
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data4);
         glGenerateMipmap(GL_TEXTURE_2D);
+        std::cout << "petrozki.jpg cargado correctamente." << std::endl;
         stbi_image_free(data4);
     }
 
