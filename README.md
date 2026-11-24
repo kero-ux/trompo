@@ -1,0 +1,13 @@
+
+Video explicacion: https://youtu.be/4QyoWitRTGc
+
+1. Explicacion del CodigoCamara, tiempo y entradas (cameraPos, deltaTime, processInput, mouse_callback): Se define la posicion y orientacion de la camara en 3D. deltaTime calcula la diferencia de tiempo entre frames para que el desplazamiento (W, A, S, D, Espacio, Shift), la rotacion de la camara y el giro de la piramide no dependan de los FPS. Con la tecla M y toggleKeyPressed se alterna entre el modo camara y el modo menu para interactuar con la interfaz.
+Piramide, modelo OBJ y texturas (setupTriangleWithNormal, loadOBJ, stb_image): La piramide arma sus caras con vertices, coordenadas UV y normales calculadas por producto cruz. loadOBJ carga enanito.obj con tinyobjloader (posiciones, coordenadas UV y normales) en un SimpleMesh (VAO/VBO), y stb_image carga las texturas aplicadas a las caras y al modelo.
+Curvas de Bezier (getBezierPoint, generateBezierCircleVertices, getBezierCirclePoint): Evalua la ecuacion cubica con cuatro puntos de control para construir y recorrer el circulo mediante dos semicirculos unidos ($k = \frac{4}{3}r$) y un parametro $t \in [0, 1]$ que permite ajustar la altura en Z y mover la luz a lo largo de la curva.
+Iluminacion Phong (Vertex y Fragment Shader): El Vertex Shader pasa la posicion en el mundo (FragPos) y la normal transformada con transpose(inverse(model)). El Fragment Shader calcula la luz ambiental, difusa y especular (shininess) sobre la textura base.Interfaz en tiempo real (Dear ImGui): Permite controlar en vivo la rotacion y pausa de la piramide, el color de fondo, la posicion/escala/rotacion del modelo, el color y altura Z de la curva de Bezier, el reinicio de la camara y los parametros de la luz Phong sobre la curva.
+2. Arquitectura del Software
+El programa se divide en modulos conectados dentro del ciclo principal de renderizado:
+Ventana, contexto y entradas (GLFW + GLAD): Crea la ventana de OpenGL 3.3, captura teclado/mouse y carga las funciones graficas.
+Matematica 3D (GLM): Calcula las matrices model, view y projection, vectores direccionales y angulos de rotacion.Carga de recursos (stb_image + tinyobjloader): Lee imagenes y el archivo .obj para construir los buffers y texturas usados en la escena.
+Shaders en GPU (GLSL): Aplican transformaciones espaciales y el modelo de iluminacion Phong por fragmento.
+Interfaz grafica (Dear ImGui): Dibuja el menu interactivo sobre la escena y modifica las variables de control en tiempo real.
